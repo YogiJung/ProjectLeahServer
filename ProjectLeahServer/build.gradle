@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'org.LEAH'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'io.netty:netty-all:4.1.109.Final'
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.googlecode.json-simple:json-simple:1.1'
+    implementation 'com.google.cloud:google-cloud-texttospeech:2.44.0'
+    implementation 'com.google.cloud:google-cloud-speech:4.38.0'
+    implementation 'com.googlecode.soundlibs:mp3spi:1.9.5-1'
+    implementation 'org.mongodb:mongodb-driver-sync:5.1.0'
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+}
+application {
+    mainClass = 'EntryServer.MainEntryPointServer'
+}
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+//scp -i /Users/junghoonyeon/LeahAws.pem ProjectLEAH-1.0-SNAPSHOT.jar ec2-user@52.53.116.100:/home/ec2-user/
