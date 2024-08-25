@@ -1,6 +1,5 @@
 package APICluster.ChatAPI;
 
-import APICluster.ChatAPI.Memories.ChatMemories;
 import QueueManagers.SyncProcessQueueObject;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -12,20 +11,13 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import io.github.cdimascio.dotenv.Dotenv;
 
 import static APICluster.APIClusterManager.chatGPTDataHandler;
 
 public class ChatGPTAPI {
-    Dotenv dotenv = Dotenv.load();
     SyncProcessQueueObject chatGPTQueue;
-    ChatMemories chatMemories;
-    String uri = dotenv.get("MONGO_URI");
-    String database = "Memories";
-    String collection = "systemSummaries";
     public ChatGPTAPI(SyncProcessQueueObject chatGPTQueue) {
         this.chatGPTQueue = chatGPTQueue;
-        this.chatMemories = new ChatMemories(uri, database, collection);
     }
 
     String API_KEY;
@@ -43,9 +35,17 @@ public class ChatGPTAPI {
             e.printStackTrace();
         }
 
-        JsonArray messages = chatMemories.makeChatMemories(content, flag);
+        JsonObject message = new JsonObject(); //
+        JsonObject systemMessage = new JsonObject(); //
+        JsonArray messages = new JsonArray(); //
+        String memory = "You are my friend"; //
+        systemMessage.addProperty("role", "system"); //
+        systemMessage.addProperty("content", memory); //
+        messages.add(systemMessage); //
+        message.addProperty("role", "user"); //
+        message.addProperty("content", content); //
+        messages.add(message); //
 
-        this.flag = 1;
         JsonObject payloadObj = new JsonObject();
         payloadObj.addProperty("model", "gpt-3.5-turbo");
         payloadObj.add("messages", messages);
@@ -85,7 +85,6 @@ public class ChatGPTAPI {
                     String responsePart = new String(buffer, 0, n);
                     System.out.println(responsePart);
                     String data = chatGPTDataHandler(responsePart);
-                    chatMemories.addMemory(data);
                     chatGPTQueue.putQueue(data);
                 }
             } catch (Exception e) {
